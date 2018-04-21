@@ -1,0 +1,72 @@
+---
+title: "Results"
+output: pdf_document
+---
+
+NOTE: getting this code to work in my home environment was very difficult! Make sure R is able to find tensorflow libraries and cudnn shared libraries, etc. I also have the results in a Jupyter Notebook (included in code) just in case. Run that instead if this fails.
+
+#### Requires python3 or higher
+#### install anaconda package manager, then run
+$ conda install tensorflow-gpu
+#### should prompt to install the following packages:
+cudatoolkit-8.0 
+cudnn-7.0.5 
+tensorflow-gpu-1.4.1 
+tensorflow-gpu-base-1.4.1 
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+# change this to local directory
+setwd("/home/alicapwn/Documents/project/SegNet-tensorflow")
+library("reticulate")
+```
+
+Visual results (pixel-wise class predictions and model uncertainty)
+## Description
+
+In this notebook, the main results of our best model are generated. Class label predictions and model uncertainty for different images in the train, validation and test datasets are presented. The method *visual_results* from the *SegNet* class which is imported in the first code line of this notebook, outputs a segmented image and uncertainty map for samples. The "visual_results" method can take three arguments: 
+1. ***dataset_type***: A string indicating the dataset type (either "TRAIN", "VAL" or "TEST"). By default it is "TEST".
+2. ***images_index***: A list indicating the images indexes from the corresponding dataset. For instance, if we pass the list [0,20,47] we are requesting the prediction for the images that are found in the indexes 0, 20 and 47 of the dataset. This parameter can also be an integer value which corresponds to the number of different images that we want to display. In this case, we randomly pick the specified number of images from the corresponding dataset. By default it is set to 3.
+3. ***FLAG_MAX_VOTE***: A boolean parameter indicating whether we want to use Max Voting (True) or Mean (False) at test time for the Bayesian model. By default it is set to False.
+
+For each of the displayed images we show (1) the original image, (2) the ground truth, i.e., the given pixel labels for training the network and obtain prediction accuracies, (3) the output of our model for the given image, and (4) the uncertainty of the model prediction (the darker the color is, the more uncertain the prediction in this pixel is).
+
+Finally, we also show the color legend for the different classes.
+
+```{python}
+import sys
+sys.path.append('/home/alicapwn/Documents/project/SegNet-tensorflow') #include local dir here
+from SegNet import SegNet
+from drawings_object import display_color_legend
+from tensorflow.python.client import device_lib
+
+## NOTE: gpu should be listed as an available device
+device_lib.list_local_devices()
+
+## see SegNet class and visual_results method for implementation
+SegNet().visual_results(dataset_type = "TRAIN", images_index = 2, FLAG_MAX_VOTE = False)
+display_color_legend()
+```
+
+
+```{python}
+## Check model performance on CamVid test set
+SegNet().test()
+```
+
+```{python}
+## see SegNet class and visual_results method for implementation on train set
+SegNet().visual_results(dataset_type = "TRAIN", images_index = 2, FLAG_MAX_VOTE = False)
+display_color_legend()
+```
+
+```{python}
+## see SegNet class and visual_results method for implementation on test set
+# Index of the image with the worst global accuracy: 62
+# Index of the image with an average global accuracy: 66
+# Index of the image with the best global accuracy: 198
+SegNet().visual_results("TEST", [62,66,198], False)
+display_color_legend()
+```
+
+
